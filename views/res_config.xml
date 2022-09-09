@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<odoo>
+
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.stock</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="30"/>
+        <field name="inherit_id" ref="odoo_shipping_service_apps.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='module_dhl_delivery_carrier']" position="replace">
+                <field name="module_itis_delivery_carrier_DHL" />
+            </xpath>
+            <xpath expr="//label[@for='module_dhl_delivery_carrier']" position="replace">
+                <label for="module_itis_delivery_carrier_DHL"/>
+            </xpath>
+            <xpath expr="//div[@id='module_dhl_delivery_carrier']" position="replace">
+                <div id="module_itis_delivery_carrier_DHL"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

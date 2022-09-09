@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="product_packaging_delivery_form">
+            <field name="name">product.packaging.form.fedex</field>
+            <field name="model">product.packaging</field>
+            <field name="inherit_id" ref="odoo_shipping_service_apps.product_packaging_delivery_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//notebook" position="inside">
+                    <page name='dhl' string='DHL Carrier'
+                          attrs="{'invisible':[('package_carrier_type', '!=', 'dhl')]}">
+                        <group>
+                            <group>
+                                <field
+                                    name="ready_time_dhl"
+                                    attrs="{'required':[('package_carrier_type','in', ('dhl'))]}"/>
+                            </group>
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="shipping_dhl_form" model="ir.ui.view">
+            <field name="name">shipping.dhl.form</field>
+            <field name="model">delivery.carrier</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="odoo_shipping_service_apps.view_delivery_carrier_form_inherit_wk_shipping"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group[@name='Delivery Setting']" col='2' position="after">
+                    <group string="DHL Shipping Information " attrs="{'invisible':[('delivery_type', '!=', 'dhl')]}">
+                        <field name="dhl_service_id" attrs="{'required':[('delivery_type', '=', 'dhl')]}"/>
+                        <field name="dhl_drop_off_id" attrs="{'required':[('delivery_type', '=', 'dhl')]}"/>
+                        <field name="dhl_label_format" attrs="{'required':[('delivery_type', '=', 'dhl')]}"/>
+                        <field name="dhl_label_type" attrs="{'required':[('delivery_type', '=', 'dhl')]}"/>
+                    </group>
+                </xpath>
+                <xpath expr="//notebook" position='inside'>
+                    <page string="DHL Credentials" attrs="{'invisible': [('delivery_type', '!=', 'dhl')]}">
+                        <group>
+                            <group>
+                                <field name="dhl_site_id" attrs="{'required': [('delivery_type', '=', 'dhl')]}"/>
+                                <field name="dhl_account_no" attrs="{'required': [('delivery_type', '=', 'dhl')]}"/>
+                                <field name="dhl_password" password='1'
+                                       attrs="{'required': [('delivery_type', '=', 'dhl')]}"/>
+                                <field name="exporter_code"/>
+                            </group>
+                            <group>
+                                <field name="declaration_text1"/>
+                                <field name="declaration_text2"/>
+                                <field name="declaration_text3"/>
+                            </group>
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="delivery_carrier_dhl_drop_off_form" model="ir.ui.view">
+            <field name="name">delivery.carrier.dhl.drop.off.form</field>
+            <field name="model">delivery.carrier.dhl.drop.off</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="delivery_carrier_dhl_drop_off_tree" model="ir.ui.view">
+            <field name="name">delivery.carrier.dhl.drop.off.tree</field>
+            <field name="model">delivery.carrier.dhl.drop.off</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="package">
+                    <field name="name"/>
+                    <field name="code"/>
+                </tree>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_delivery_carrier_dhl_drop_off">
+            <field name="name">DHL Drop-Off Type</field>
+            <field name="res_model">delivery.carrier.dhl.drop.off</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="delivery_carrier_dhl_drop_off_tree"/>
+        </record>
+
+        <record id="delivery_carrier_dhl_service_form" model="ir.ui.view">
+            <field name="name">delivery.carrier.dhl.service.form</field>
+            <field name="model">delivery.carrier.dhl.service</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="is_dutiable"/>
+                                <field name="is_insured"/>
+                            </group>
+                            <group>
+                                <field name="global_code"/>
+                                <field name="local_code"/>
+                                <field name="term_of_trade"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="delivery_carrier_dhl_service_tree" model="ir.ui.view">
+            <field name="name">delivery.carrier.dhl.service.tree</field>
+            <field name="model">delivery.carrier.dhl.service</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="container">
+                    <field name="name"/>
+                    <field name="global_code"/>
+                    <field name="local_code"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_stock_picking_dhl_shipping_search" model="ir.ui.view">
+            <field name="name">stock.picking.dhl.shipping.search</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="odoo_shipping_service_apps.view_picking_shipping_search"/>
+            <field name="arch" type="xml">
+                <filter name="draft" position='after'>
+                    <filter icon="terp-check" name="dhl" string="DHL" domain="[('delivery_type','=','dhl')]"
+                            help="Picking For which DHL Shipment is assign "/>
+                </filter>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_delivery_carrier_dhl_service">
+            <field name="name">DHL Service List</field>
+            <field name="res_model">delivery.carrier.dhl.service</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="delivery_carrier_dhl_service_tree"/>
+        </record>
+
+        <menuitem id="menu_shipping_dhl"
+                  name="DHL Services"
+                  parent="delivery.menu_delivery"/>
+
+        <menuitem id="menu_shipping_dhl_service"
+                  parent="menu_shipping_dhl"
+                  name="Service Type"
+                  action="action_delivery_carrier_dhl_service"/>
+
+        <menuitem id="menu_shipping_dhl_drop_off"
+                  parent="menu_shipping_dhl"
+                  name="Drop-Off Type"
+                  action="action_delivery_carrier_dhl_drop_off"/>
+    </data>
+</odoo>

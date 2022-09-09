@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record forcecreate="True" id="domestic_services_n" model="delivery.carrier.dhl.service">
+            <field name="name">Domestic Services(N)</field>
+            <field name="global_code">N</field>
+            <field name="local_code">N</field>
+        </record>
+
+        <record forcecreate="True" id="european_wide_services_EU" model="delivery.carrier.dhl.service">
+            <field name="name">National and European-wide services(EU)</field>
+            <field name="global_code">EU</field>
+            <field name="local_code">EU</field>
+        </record>
+
+        <record forcecreate="True" id="world_document_d" model="delivery.carrier.dhl.service">
+            <field name="name">World Document(D)</field>
+            <field name="global_code">D</field>
+            <field name="local_code">D</field>
+        </record>
+
+        <record forcecreate="True" id="world_wide_p" model="delivery.carrier.dhl.service">
+            <field name="name">World Wide(P)</field>
+            <field name="global_code">P</field>
+            <field name="local_code">P</field>
+            <field name="is_dutiable">Y</field>
+        </record>
+
+        <record forcecreate="True" id="door_to_door" model="delivery.carrier.dhl.drop.off">
+            <field name="name">Door to Door</field>
+            <field name="code">DD</field>
+        </record>
+
+        <record forcecreate="True" id="door_to_airport" model="delivery.carrier.dhl.drop.off">
+            <field name="name">Door to Airport</field>
+            <field name="code">DA</field>
+        </record>
+
+        <record forcecreate="True" id="airport_to_airport" model="delivery.carrier.dhl.drop.off">
+            <field name="name">Airport to Airport</field>
+            <field name="code">AA</field>
+        </record>
+
+        <record forcecreate="True" id="Door_to_door_non_compliant" model="delivery.carrier.dhl.drop.off">
+            <field name="name">Door to * Door non-compliant</field>
+            <field name="code">DC</field>
+        </record>
+
+    </data>
+</odoo>
