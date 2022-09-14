@@ -24,7 +24,7 @@
             <field name="name">World Wide(P)</field>
             <field name="global_code">P</field>
             <field name="local_code">P</field>
-            <field name="is_dutiable">Y</field>
+            <field name="is_dutiable">yes</field>
         </record>
 
         <record forcecreate="True" id="door_to_door" model="delivery.carrier.dhl.drop.off">

@@ -16,7 +16,7 @@
         'data/package.xml',
         'data/delivery_demo.xml',
         'views/dhl_delivery_carrier.xml',
-        'views/dhl_delivery_carrier.xml',
+        'views/stock_return_picking_views.xml',
         'views/res_config.xml',
     ],
     "demo": ['data/demo.xml'],

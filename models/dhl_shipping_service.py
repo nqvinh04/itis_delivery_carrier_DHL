@@ -53,7 +53,7 @@ class WKShippingDhlService(models.Model):
     is_dutiable = fields.Selection(selection=[('no', 'No'), ('yes', 'Yes')], string='IS Dutiable', required=1,
                                    default='no')
     is_insured = fields.Selection(selection=[('no', 'No'), ('yes', 'Yes')], string='IS Insured',
-                                  required=1, default='N')
+                                  required=1, default='no')
 
 
 class ProductPackage(models.Model):
