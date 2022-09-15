@@ -45,6 +45,5 @@
             <field name="global_code">EU</field>
             <field name="local_code">EU</field>
         </record>
-
     </data>
 </odoo>
