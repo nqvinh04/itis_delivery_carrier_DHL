@@ -1,5 +1,5 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_dhl_service_users,delivery.carrier.dhl.service,model_delivery_carrier_dhl_service,,1,0,0,0
-access_dhl_service_admin,delivery.carrier.dhl.service,model_delivery_carrier_dhl_service,stock.group_stock_manager,1,1,1,1
+access_dhl_service_manager,delivery.carrier.dhl.service,model_delivery_carrier_dhl_service,stock.group_stock_manager,1,1,1,1
 access_dhl_drop_off_users,delivery.carrier.dhl.drop.off,model_delivery_carrier_dhl_drop_off,,1,0,0,0
-access_dhl_drop_off_admin,delivery.carrier.dhl.drop.off,model_delivery_carrier_dhl_drop_off,stock.group_stock_manager,1,1,1,1
+access_dhl_drop_off_manager,delivery.carrier.dhl.drop.off,model_delivery_carrier_dhl_drop_off,stock.group_stock_manager,1,1,1,1

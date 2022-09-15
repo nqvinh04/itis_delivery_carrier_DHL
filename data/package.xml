@@ -2,19 +2,7 @@
 <odoo>
     <data noupdate="1">
 
-        <record forcecreate="True" id="dhl_package_CP" model="product.packaging">
-            <field name='package_carrier_type'>dhl</field>
-            <field name='qty'>1</field>
-            <field name="name">Customer-provided(Specially for Ground shipments)</field>
-            <field name="shipper_package_code">CP</field>
-            <field name="height">10</field>
-            <field name="max_weight">70</field>
-            <field name="width">10</field>
-            <field name="packaging_length">10</field>
-            <field name="cover_amount">10</field>
-        </record>
-
-        <record forcecreate="True" id="dhl_package_EE" model="product.packaging">
+        <record forcecreate="True" id="dhl_ee_package" model="product.packaging">
             <field name='package_carrier_type'>dhl</field>
             <field name='qty'>1</field>
             <field name="name">DHL Express Envelope</field>
@@ -26,7 +14,19 @@
             <field name="cover_amount">10</field>
         </record>
 
-        <record forcecreate="True" id="dhl_package_OD" model="product.packaging">
+        <record forcecreate="True" id="dhl_cp_package" model="product.packaging">
+            <field name='package_carrier_type'>dhl</field>
+            <field name='qty'>1</field>
+            <field name="name">Customer-provided(Specially for Ground shipments)</field>
+            <field name="shipper_package_code">CP</field>
+            <field name="height">10</field>
+            <field name="max_weight">70</field>
+            <field name="width">10</field>
+            <field name="packaging_length">10</field>
+            <field name="cover_amount">10</field>
+        </record>
+
+        <record forcecreate="True" id="dhl_od_package" model="product.packaging">
             <field name='package_carrier_type'>dhl</field>
             <field name='qty'>1</field>
             <field name="name">Other DHL Packaging</field>

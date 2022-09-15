@@ -27,13 +27,13 @@
         </record>
 
 
-        <record forcecreate="True" id="dhl_delivery_carrier_Domestic_service" model="delivery.carrier">
+        <record forcecreate="True" id="dhl_domestic_service" model="delivery.carrier">
             <field name="name">DHL Domestic Domestic</field>
             <field name="delivery_type">dhl</field>
             <field name="product_id" ref="product_product_delivery_dhl_domestic"/>
             <field name="dhl_service_id" ref="domestic_services_n"/>
             <field name="dhl_drop_off_id" ref="door_to_door"/>
-            <field name="packaging_id" ref="dhl_package_CP"/>
+            <field name="packaging_id" ref="dhl_cp_package"/>
             <field name="extra_service_price">10</field>
             <field name="void_shipment">True</field>
             <field name="uom_id" ref='uom.product_uom_kgm'/>
@@ -41,13 +41,13 @@
             <field name="image" type="base64" file="itis_delivery_carrier_DHL/static/src/img/logo-dhl.png"/>
         </record>
 
-        <record forcecreate="True" id="dhl_delivery_carrier_EXPRESS_service" model="delivery.carrier">
+        <record forcecreate="True" id="dhl_express_service" model="delivery.carrier">
             <field name="name">DHL WorldWide EXPRESS</field>
             <field name="delivery_type">dhl</field>
             <field name="product_id" ref="product_product_delivery_dhl_express"/>
             <field name="dhl_service_id" ref="world_wide_p"/>
             <field name="dhl_drop_off_id" ref="door_to_airport"/>
-            <field name="packaging_id" ref="dhl_package_CP"/>
+            <field name="packaging_id" ref="dhl_cp_package"/>
             <field name="extra_service_price">10</field>
             <field name="void_shipment">True</field>
             <field name="uom_id" ref='uom.product_uom_kgm'/>
@@ -55,13 +55,13 @@
             <field name="image" type="base64" file="itis_delivery_carrier_DHL/static/src/img/logo-dhl.png"/>
         </record>
 
-        <record forcecreate="True" id="dhl_delivery_carrier_Document_service" model="delivery.carrier">
+        <record forcecreate="True" id="dhl_delivery_carrier_document_service" model="delivery.carrier">
             <field name="name">DHL WorldWide Document</field>
             <field name="delivery_type">dhl</field>
             <field name="product_id" ref="product_product_delivery_dhl_document"/>
             <field name="dhl_service_id" ref="world_document_d"/>
             <field name="dhl_drop_off_id" ref="door_to_airport"/>
-            <field name="packaging_id" ref="dhl_package_CP"/>
+            <field name="packaging_id" ref="dhl_cp_package"/>
             <field name="extra_service_price">10</field>
             <field name="void_shipment">True</field>
             <field name="uom_id" ref='uom.product_uom_kgm'/>
