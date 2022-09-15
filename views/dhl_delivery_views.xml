@@ -1,61 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        <record model="ir.ui.view" id="product_packaging_delivery_form">
-            <field name="name">product.packaging.form.fedex</field>
-            <field name="model">product.packaging</field>
-            <field name="inherit_id" ref="odoo_shipping_service_apps.product_packaging_delivery_form"/>
-            <field name="arch" type="xml">
-                <xpath expr="//notebook" position="inside">
-                    <page name='dhl' string='DHL Carrier'
-                          attrs="{'invisible':[('package_carrier_type', '!=', 'dhl')]}">
-                        <group>
-                            <group>
-                                <field
-                                    name="ready_time_dhl"
-                                    attrs="{'required':[('package_carrier_type','in', ('dhl'))]}"/>
-                            </group>
-                        </group>
-                    </page>
-                </xpath>
-            </field>
-        </record>
-
-        <record id="shipping_dhl_form" model="ir.ui.view">
-            <field name="name">shipping.dhl.form</field>
-            <field name="model">delivery.carrier</field>
-            <field name="type">form</field>
-            <field name="inherit_id" ref="odoo_shipping_service_apps.view_delivery_carrier_form_inherit_wk_shipping"/>
-            <field name="arch" type="xml">
-                <xpath expr="//group[@name='Delivery Setting']" col='2' position="after">
-                    <group string="DHL Shipping Information " attrs="{'invisible':[('delivery_type', '!=', 'dhl')]}">
-                        <field name="dhl_service_id" attrs="{'required':[('delivery_type', '=', 'dhl')]}"/>
-                        <field name="dhl_drop_off_id" attrs="{'required':[('delivery_type', '=', 'dhl')]}"/>
-                        <field name="dhl_label_format" attrs="{'required':[('delivery_type', '=', 'dhl')]}"/>
-                        <field name="dhl_label_type" attrs="{'required':[('delivery_type', '=', 'dhl')]}"/>
-                    </group>
-                </xpath>
-                <xpath expr="//notebook" position='inside'>
-                    <page string="DHL Credentials" attrs="{'invisible': [('delivery_type', '!=', 'dhl')]}">
-                        <group>
-                            <group>
-                                <field name="dhl_site_id" attrs="{'required': [('delivery_type', '=', 'dhl')]}"/>
-                                <field name="dhl_account_no" attrs="{'required': [('delivery_type', '=', 'dhl')]}"/>
-                                <field name="dhl_password" password='1'
-                                       attrs="{'required': [('delivery_type', '=', 'dhl')]}"/>
-                                <field name="exporter_code"/>
-                            </group>
-                            <group>
-                                <field name="declaration_text1"/>
-                                <field name="declaration_text2"/>
-                                <field name="declaration_text3"/>
-                            </group>
-                        </group>
-                    </page>
-                </xpath>
-            </field>
-        </record>
-
         <record id="delivery_carrier_dhl_drop_off_form" model="ir.ui.view">
             <field name="name">delivery.carrier.dhl.drop.off.form</field>
             <field name="model">delivery.carrier.dhl.drop.off</field>

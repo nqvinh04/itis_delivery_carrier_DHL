@@ -19,12 +19,12 @@ except Exception as e:
     _logger.error("#ITISDEBUG-1  python  urllib3 library not installed .")
 
 
-class DhlApi:
-    ApiEnd = dict(
-        test='https://xmlpitest-ea.dhl.com/XMLShippingServlet',
-        production='https://xmlpi-ea.dhl.com/XMLShippingServlet',
-        tracking="http://www.dhl.com/en/express/tracking.html"
-    )
+class DHLApiConfig:
+    ApiEnd = {
+        'test': 'https://xmlpitest-ea.dhl.com/XMLShippingServlet',
+        'production': 'https://xmlpi-ea.dhl.com/XMLShippingServlet',
+        'tracking': "http://www.dhl.com/en/express/tracking.html"
+    }
 
     @staticmethod
     def check_error(root):
@@ -91,14 +91,14 @@ class DhlApi:
             currency = CurrencyCode[0].text
         return dict(price=price, currency=currency, success=True)
 
-    def send_request_shipment(self, data):
+    def _process_shipment(self, data):
         response = self.send_request(data)
         if response.get('error_message'):
             return response
         root = response.get('root')
         currency = 'USD'
         amount = root.findtext('ShippingCharge')
-        tracking_result = dict()
+        tracking_result = {}
         for tracking_number, docformat, image in zip(root.getiterator("AirwayBillNumber"),
                                                      root.getiterator("OutputFormat"),
                                                      root.getiterator("OutputImage")):
@@ -329,7 +329,7 @@ class DhlApi:
         return requestEA
 
 
-class DhlDeliveryCarrier(models.Model):
+class DeliveryCarrier(models.Model):
     _inherit = "delivery.carrier"
 
     @api.model
@@ -341,24 +341,27 @@ class DhlDeliveryCarrier(models.Model):
         res = self.dhl_service_id.read(['is_dutiable', 'is_insured', 'global_code', 'local_code', 'term_of_trade'])[0]
         res.pop('id')
         if order:
-            res.update(dict(
-                ship_date=fields.Datetime.from_string(order.date_order).strftime("%Y-%m-%d"),
-                dimension_unit=(self.delivery_uom == 'KG') and 'CM' or 'IN',
-                weight_unit=(self.delivery_uom == 'KG') and 'KG' or 'LB',
-                reference=order.name or order.origin,
-            ))
+            result = {
+                'ship_date': fields.Datetime.from_string(order.date_order).strftime("%Y-%m-%d"),
+                'dimension_unit': (self.delivery_uom == 'KG') and 'CM' or 'IN',
+                'weight_unit': (self.delivery_uom == 'KG') and 'KG' or 'LB',
+                'reference': order.name or order.origin,
+            }
+            res.update(result)
         else:
             contents = 'Customer Order %s' % pickings.name
             if pickings.origin:
                 contents = 'Customer Order Reference ' + pickings.origin
-            res.update(dict(
-                ship_date=fields.Datetime.from_string(pickings.scheduled_date).strftime("%Y-%m-%d"),
-                dimension_unit=(self.delivery_uom == 'KG') and 'C' or 'I',
-                weight_unit=(self.delivery_uom == 'KG') and 'K' or 'L',
-                reference=pickings.origin or pickings.name,
-                drop_off_type=self.dhl_drop_off_id.code,
-                contents=contents,
-            ))
+
+            result = {
+                'ship_date': fields.Datetime.from_string(pickings.scheduled_date).strftime("%Y-%m-%d"),
+                'dimension_unit': (self.delivery_uom == 'KG') and 'C' or 'I',
+                'weight_unit': (self.delivery_uom == 'KG') and 'K' or 'L',
+                'reference': pickings.origin or pickings.name,
+                'drop_off_type': self.dhl_drop_off_id.code,
+                'contents': contents,
+            }
+            res.update(result)
 
         return res
 
@@ -373,11 +376,11 @@ class DhlDeliveryCarrier(models.Model):
         config = self.wk_get_carrier_settings(['dhl_site_id', 'dhl_account_no', 'dhl_password', 'prod_environment'])
         config['dhl_environment'] = 'production' if config['prod_environment'] else 'test'
         config['dhl_currency'] = currency_code
-        sdk = DhlApi(**config)
+        sdk = DHLApiConfig(**config)
 
         package_items = self.wk_get_order_package(order=order)
         items = self.wk_group_by('packaging_id', package_items)
-        result = dict()
+        result = {}
         tot_price = 0
         index = 1
         for order_packaging_id, wk_package_ids in items:
@@ -388,13 +391,13 @@ class DhlDeliveryCarrier(models.Model):
             for package_id in wk_package_ids:
                 weight = round(self._get_api_weight(package_id.get('weight')), 3)
                 weight = weight and weight or self.default_product_weight
-                piece_data = dict(
-                    piece_id=index,
-                    height=package_id.get('height'),
-                    depth=package_id.get('width'),
-                    width=package_id.get('length'),
-                    weight=weight,
-                )
+                piece_data = {
+                    'piece_id': index,
+                    'height': package_id.get('height'),
+                    'depth': package_id.get('width'),
+                    'width': package_id.get('length'),
+                    'weight': weight,
+                }
                 pieces.append(sdk.construct_piece(piece_data))
                 index += 1
             data['ready_time'] = 'PT%sH00M' % (packaging_id.ready_time_dhl)
@@ -450,7 +453,7 @@ class DhlDeliveryCarrier(models.Model):
                  'dhl_label_type', 'exporter_code', 'declaration_text1', 'declaration_text2', 'declaration_text3'])
             config['dhl_environment'] = 'production' if config['prod_environment'] else 'test'
             config['dhl_currency'] = currency_code
-            sdk = DhlApi(**config)
+            sdk = DHLApiConfig(**config)
             packaging_ids = obj.wk_group_by_packaging(pickings=pickings)
             for packaging_id, package_ids in packaging_ids.items():
                 declared_value = sum(map(lambda i: i.cover_amount, package_ids))
@@ -465,15 +468,14 @@ class DhlDeliveryCarrier(models.Model):
                     weight = weight and weight or obj.default_product_weight
 
                     weight_value += weight
-                    piece_data = dict(
-                        piece_id=index,
-                        weight=weight,
-                        height=pkg_data.get('height'),
-                        depth=pkg_data.get('width'),
-                        width=pkg_data.get('packaging_length'),
-                        shipper_package_code=pkg_data.get('shipper_package_code')
-
-                    )
+                    piece_data = {
+                        'piece_id': index,
+                        'weight': weight,
+                        'height': pkg_data.get('height'),
+                        'depth': pkg_data.get('width'),
+                        'width': pkg_data.get('packaging_length'),
+                        'shipper_package_code': pkg_data.get('shipper_package_code')
+                    }
                     pieces.append(sdk.construct_piece(piece_data, pickings=pickings))
                     index += 1
 
@@ -489,10 +491,10 @@ class DhlDeliveryCarrier(models.Model):
                 ship_req = sdk.construct_ship_request_dhl(
                     data, shipper_info, recipient_info, pieces, pickings=pickings)
                 ship_req_xml = sdk.rough_string(ship_req)
-                response = sdk.send_request_shipment(ship_req_xml)
-                if response.get('error_message'):
-                    raise ValidationError(response.get('error_message'))
-                tracking_result = response.get('tracking_result')
+                dhl_response = sdk._process_shipment(ship_req_xml)
+                if dhl_response.get('error_message'):
+                    raise ValidationError(dhl_response.get('error_message'))
+                tracking_result = dhl_response.get('tracking_result')
                 result['weight'] += weight_value
                 if tracking_result:
                     result['tracking_number'] += ','.join(tracking_result.keys())
@@ -501,7 +503,7 @@ class DhlDeliveryCarrier(models.Model):
 
     @api.model
     def dhl_cancel_shipment(self, picking):
-        return DhlApi.get_tracking(picking.carrier_tracking_ref)
+        return DHLApiConfig.get_tracking(picking.carrier_tracking_ref)
 
     @api.model
     def dhl_cancel_shipment(self, pickings):

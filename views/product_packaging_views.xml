@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="product_packaging_delivery_form">
+            <field name="name">product.packaging.form.fedex</field>
+            <field name="model">product.packaging</field>
+            <field name="inherit_id" ref="odoo_shipping_service_apps.product_packaging_delivery_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//notebook" position="inside">
+                    <page name='dhl' string='DHL Carrier'
+                          attrs="{'invisible':[('package_carrier_type', '!=', 'dhl')]}">
+                        <group>
+                            <group>
+                                <field
+                                    name="ready_time_dhl"
+                                    attrs="{'required':[('package_carrier_type','in', ('dhl'))]}"/>
+                            </group>
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -16,7 +16,7 @@ LABEL_FORMAT_TYPE = [
 ]
 
 
-class WkShippingDhl(models.Model):
+class DeliveryCarrier(models.Model):
     _inherit = "delivery.carrier"
 
     delivery_type = fields.Selection(selection_add=[('dhl', 'DHL')], ondelete={'dhl': 'cascade'})
