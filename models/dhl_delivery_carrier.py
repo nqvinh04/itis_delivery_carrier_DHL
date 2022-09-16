@@ -26,6 +26,11 @@ class DHLApiConfig:
         'tracking': "http://www.dhl.com/en/express/tracking.html"
     }
 
+    ApiReturn = {
+        'test': 'https://xmlpitest-ea.dhl.com/services/sandbox/rest/returns',
+        'production': 'https://xmlpi-ea.dhl.com/services/sandbox/rest/returns',
+    }
+
     @staticmethod
     def check_error(root):
         error = False
@@ -63,11 +68,15 @@ class DHLApiConfig:
         self.dhl_label_format = kwargs.get('dhl_label_format')
         self.dhl_label_type = kwargs.get('dhl_label_type')
 
-    def send_request(self, request_xml):
+    def send_request(self, request_xml, request_type):
         try:
             api_end = self.ApiEnd.get(self.dhl_environment or 'test')
+            api_return = self.ApiReturn.get(self.dhl_environment or 'test')
             _logger.info("DHL api_end=%r==" % api_end)
-            response = requests.request('POST', api_end, data=request_xml.encode('utf-8'))
+            if request_type == 'ship':
+                response = requests.request('POST', api_end, data=request_xml.encode('utf-8'))
+            if request_type == 'return':
+                response = requests.request('POST', api_return, data=request_xml.encode('utf-8'))
             root = etree.fromstring(response.text)
             error = self.check_error(root)
             return dict(success=0 if error else 1, error_message=error, root=root)
@@ -76,8 +85,8 @@ class DHLApiConfig:
                 "#Itis---DHL %r Exception-----%r---------" % (request_xml, err))
             return dict(success=False, error_message=err)
 
-    def send_request_rate(self, data):
-        response = self.send_request(data)
+    def send_request_rate(self, data, request_type):
+        response = self.send_request(data, request_type)
         if response.get('error_message'):
             return response
         root = response.get('root')
@@ -91,8 +100,8 @@ class DHLApiConfig:
             currency = CurrencyCode[0].text
         return dict(price=price, currency=currency, success=True)
 
-    def _process_shipment(self, data):
-        response = self.send_request(data)
+    def _process_shipment(self, data, request_type):
+        response = self.send_request(data, request_type)
         if response.get('error_message'):
             return response
         root = response.get('root')
@@ -332,6 +341,12 @@ class DHLApiConfig:
 class DeliveryCarrier(models.Model):
     _inherit = "delivery.carrier"
 
+    def _compute_can_generate_return(self):
+        super()._compute_can_generate_return()
+        for carrier in self:
+            if carrier.delivery_type == 'dhl':
+                carrier.can_generate_return = True
+
     @api.model
     def dhl_get_shipping_price_piece(self, sdk, order):
         pass
@@ -406,7 +421,7 @@ class DeliveryCarrier(models.Model):
             rate_req = sdk.construct_rate_request_dhl(
                 data, shipper_info, recipient_info, pieces)
             rate_req_xml = sdk.rough_string(rate_req)
-            response = sdk.send_request_rate(rate_req_xml)
+            response = sdk.send_request_rate(rate_req_xml, request_type='ship')
             if response.get('error_message'):
                 return response
             else:
@@ -491,7 +506,7 @@ class DeliveryCarrier(models.Model):
                 ship_req = sdk.construct_ship_request_dhl(
                     data, shipper_info, recipient_info, pieces, pickings=pickings)
                 ship_req_xml = sdk.rough_string(ship_req)
-                dhl_response = sdk._process_shipment(ship_req_xml)
+                dhl_response = sdk._process_shipment(ship_req_xml, request_type='ship')
                 if dhl_response.get('error_message'):
                     raise ValidationError(dhl_response.get('error_message'))
                 tracking_result = dhl_response.get('tracking_result')
@@ -511,4 +526,70 @@ class DeliveryCarrier(models.Model):
 
     @api.model
     def dhl_get_return_label(self, pickings, tracking_number, origin_date):
-        raise ValidationError("DHL Do Not Provide Return Label")
+        # raise ValidationError("DHL Do Not Provide Return Label")
+        for obj in self:
+            result = {
+                'exact_price': 0,
+                'weight': 0,
+                'date_delivery': None,
+                'tracking_number': '',
+                'attachments': []
+            }
+            currency_id = obj.get_shipment_currency_id(pickings=pickings)
+            currency_code = currency_id.name
+            total_package = 0
+            shipper_info = obj.get_shipment_shipper_address(picking=pickings)
+            recipient_info = obj.get_shipment_recipient_address(picking=pickings)
+
+            config = obj.wk_get_carrier_settings(
+                ['dhl_site_id', 'dhl_account_no', 'dhl_password', 'prod_environment', 'dhl_label_format',
+                 'dhl_label_type', 'exporter_code', 'declaration_text1', 'declaration_text2', 'declaration_text3'])
+            config['dhl_environment'] = 'production' if config['prod_environment'] else 'test'
+            config['dhl_currency'] = currency_code
+            sdk = DHLApiConfig(**config)
+            packaging_ids = obj.wk_group_by_packaging(pickings=pickings)
+            for packaging_id, package_ids in packaging_ids.items():
+                declared_value = sum(map(lambda i: i.cover_amount, package_ids))
+                weight_value = 0
+                index = 1
+                pkg_data = packaging_id.read(['height', 'width', 'packaging_length', 'shipper_package_code'])[0]
+                number_of_packages = len(package_ids)
+                total_package += number_of_packages
+                pieces = Element('Pieces')
+                for package_id in package_ids:
+                    weight = obj._get_api_weight(package_id.shipping_weight)
+                    weight = weight and weight or obj.default_product_weight
+
+                    weight_value += weight
+                    piece_data = {
+                        'piece_id': index,
+                        'weight': weight,
+                        'height': pkg_data.get('height'),
+                        'depth': pkg_data.get('width'),
+                        'width': pkg_data.get('packaging_length'),
+                        'shipper_package_code': pkg_data.get('shipper_package_code')
+                    }
+                    pieces.append(sdk.construct_piece(piece_data, pickings=pickings))
+                    index += 1
+
+                data = obj.dhl_get_shipping_data(pickings=pickings)
+                data['weight'] = weight_value
+                data['declared_value'] = declared_value
+                data['number_of_pieces'] = index - 1
+                data['shipper_package_code'] = pkg_data.get('shipper_package_code')
+                data['exporter_code'] = config.get('exporter_code')
+                data['declaration_text1'] = config.get('declaration_text1')
+                data['declaration_text2'] = config.get('declaration_text2')
+                data['declaration_text3'] = config.get('declaration_text3')
+                ship_req = sdk.construct_ship_request_dhl(
+                    data, shipper_info, recipient_info, pieces, pickings=pickings)
+                ship_req_xml = sdk.rough_string(ship_req)
+                response_return = sdk._process_shipment(ship_req_xml, request_type='return')
+                if response_return.get('error_message'):
+                    raise ValidationError(response_return.get('error_message'))
+                tracking_result = response_return.get('tracking_result')
+                result['weight'] += weight_value
+                if tracking_result:
+                    result['tracking_number'] += ','.join(tracking_result.keys())
+                    result['attachments'] += list(tracking_result.values())
+            return result
